@@ -25,6 +25,7 @@ app.get('/', (c) => {
 	return c.text('Hello Hono!')
 })
 
+/* this route start the better auth routes, it send all requests to /api/auth/** directly to the auth.ts handler */
 app.on(['POST', 'GET'], '/api/auth/**', (c) => {
   return auth.handler(c.req.raw);
 });

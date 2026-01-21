@@ -46,7 +46,7 @@ model User {
 }
 
 model Session {
-	id        String   @id
+	id        String   @id @default(cuid())
 	userId    String
 	token     String
 	expiresAt DateTime
@@ -62,10 +62,11 @@ model Session {
 }
 
 model Account {
-	id                    String    @id
+	id                    String    @id @default(cuid())
 	userId                String
 	accountId             String
 	providerId            String
+  idToken               String?
 	accessToken           String?
 	refreshToken          String?
 	accessTokenExpiresAt  DateTime?
@@ -78,10 +79,11 @@ model Account {
 	user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
 	@@map("account")
+  @@unique([providerId, accountId])
 }
 
 model Verification {
-	id         String    @id
+	id         String    @id @default(cuid())
 	identifier String
 	value      String
 	expiresAt  DateTime

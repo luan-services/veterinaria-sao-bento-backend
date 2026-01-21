@@ -1,0 +1,185 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/* better auth models */
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  role          Role      @default(USER)
+  cpf           String?   @unique /* cpf is unique */
+  phone         String?   
+  address       String?
+
+  /* better auth relationship */
+  sessions      Session[]
+  accounts      Account[]
+
+  /* PRD relationship */
+  pets          Pet[]
+  appointments  Appointment[]
+
+  @@map("user")
+}
+
+model Session {
+	id        String   @id
+	userId    String
+	token     String
+	expiresAt DateTime
+	ipAddress String?
+	userAgent String?
+	createdAt DateTime
+	updatedAt DateTime
+
+	user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+	@@unique([token])
+	@@map("session")
+}
+
+model Account {
+	id                    String    @id
+	userId                String
+	accountId             String
+	providerId            String
+	accessToken           String?
+	refreshToken          String?
+	accessTokenExpiresAt  DateTime?
+	refreshTokenExpiresAt DateTime?
+	scope                 String?
+	password              String?
+	createdAt             DateTime
+	updatedAt             DateTime
+
+	user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+	@@map("account")
+}
+
+model Verification {
+	id         String    @id
+	identifier String
+	value      String
+	expiresAt  DateTime
+	createdAt  DateTime?
+	updatedAt  DateTime?
+
+	@@map("verification")
+}
+
+/* PRD models */
+
+enum Species {
+  DOG
+  CAT
+}
+
+model Pet {
+  id          String        @id @default(cuid())
+  name        String
+  species     Species
+  breed       String?       // Raça
+  birthDate   DateTime?     // Para calcular idade
+  photoUrl    String?
+  
+  ownerId     String
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  /* relationships */
+  owner       User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+
+
+  @@map("pet")
+}
+
+model Professional {
+  id          String        @id @default(cuid())
+  name        String
+  specialty   String        // Ex: "Veterinário Geral", "Groomer (Banho)"
+  active      Boolean       @default(true) // Se sair da clínica, marca false
+  
+  /* relationships */
+  appointments Appointment[]
+
+  @@map("professional")
+}
+
+model Location {
+  id          String        @id @default(cuid())
+  name        String        // Ex: "Unidade Centro"
+  address     String
+  
+  /* relationships */
+  appointments Appointment[]
+
+  @@map("location")
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum ServiceType {
+  CONSULTATION
+  VACCINATION
+  EXAM
+  CHECKUP
+  BATH_GROOMING
+}
+
+model Appointment {
+  id            String            @id @default(cuid())
+  date          DateTime          
+  status        AppointmentStatus @default(PENDING)
+  serviceType   ServiceType       
+  notes         String?          
+ 
+  /* relationships */
+  
+  userId        String
+  user          User              @relation(fields: [userId], references: [id])
+  
+  petId         String
+  pet           Pet               @relation(fields: [petId], references: [id])
+  
+  professionalId String
+  professional   Professional     @relation(fields: [professionalId], references: [id])
+  
+  locationId    String
+  location      Location          @relation(fields: [locationId], references: [id])
+
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@map("appointment")
+}

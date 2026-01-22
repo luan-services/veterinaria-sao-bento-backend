@@ -1,6 +1,20 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma.js";
+import { APIError } from "better-auth";
+import { createAuthMiddleware } from "better-auth/api";
+import { z } from "zod";
+
+/* validation schema for password */
+const passwordSchema = z.object({
+    password: z.string()
+    .min(8, "Password is expected to have more than 8 characters")
+    .max(60, "Password is expected to have less than 60 characters")
+    .regex(/[A-Z]/, "Password is expected to have at least a upper case letter")
+    .regex(/[a-z]/, "Password is expected to have at least a lower case letter")
+    .regex(/[0-9]/, "Password is expected to have at least a number")
+    .regex(/[\W_]/, "Password is expected to have at least a symbol")
+})
 
 export const auth = betterAuth({
     database: prismaAdapter(prisma, {
@@ -8,6 +22,25 @@ export const auth = betterAuth({
     }),
     emailAndPassword: {
         enabled: true,
+    },
+    hooks: {
+        before: createAuthMiddleware(async (ctx) => {
+            if (ctx.path === "/sign-up/email") { /* this guarantees this middleware only runs on register by e-mail route */
+                const body = ctx.body; 
+
+                if (body?.password) {
+                    /* if body.password exists validate it with zod schema */
+                    const validation = passwordSchema.safeParse({password: body.password}); 
+
+                    if (!validation.success) { /* if not valid, throws better auth API Error */
+                        throw new APIError("BAD_REQUEST", {
+                            message: validation.error.issues[0].message
+                        });
+                    }
+                    
+                }
+            }
+        }),
     },
     socialProviders: {
         google: {

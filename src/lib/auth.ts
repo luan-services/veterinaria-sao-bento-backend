@@ -26,7 +26,35 @@ export const auth = betterAuth({
     },
     user: {
         additionalFields: {
-            role: { type: "string"}
+            lastName: {
+                type: "string",
+                required: true, /* enforces validation before hitting the DB */
+                input: true,    /* allows this field to be passed from the signUp client */
+                returned: false
+            },
+            role: {
+                type: "string",
+                required: false,
+                defaultValue: "USER", 
+                input: false, /* never let the frontend set its own role */
+            },
+            phone: {
+                type: "string",
+                required: false,
+                input: true,
+                returned: false
+            },
+            address: {
+                type: "string",
+                required: false,
+                input: true,
+                returned: false
+            },
+            cpf: {
+                type: "string",
+                input: true,
+                returned: false
+            }
         }
     },
     hooks: {

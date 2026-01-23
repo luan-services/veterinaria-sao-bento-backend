@@ -21,76 +21,77 @@ enum Role {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String    @id
   name          String
-  email         String    @unique
-  emailVerified Boolean?
+  email         String
+  emailVerified Boolean   @default(false)
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  
+  sessions      Session[]
+  accounts      Account[]
+
+  /* PRD fields */
   role          Role      @default(USER)
+  lastName      String
   cpf           String?   @unique /* cpf is unique */
   phone         String?   
   address       String?
-
-  /* better auth relationship */
-  sessions      Session[]
-  accounts      Account[]
 
   /* PRD relationship */
   pets          Pet[]
   appointments  Appointment[]
 
+  @@unique([email])
   @@map("user")
 }
 
 model Session {
-	id        String   @id @default(cuid())
-	userId    String
-	token     String
-	expiresAt DateTime
-	ipAddress String?
-	userAgent String?
-	createdAt DateTime
-	updatedAt DateTime
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-	user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-	@@unique([token])
-	@@map("session")
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
 }
 
 model Account {
-	id                    String    @id @default(cuid())
-	userId                String
-	accountId             String
-	providerId            String
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
   idToken               String?
-	accessToken           String?
-	refreshToken          String?
-	accessTokenExpiresAt  DateTime?
-	refreshTokenExpiresAt DateTime?
-	scope                 String?
-	password              String?
-	createdAt             DateTime
-	updatedAt             DateTime
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
-	user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-	@@map("account")
-  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("account")
 }
 
 model Verification {
-	id         String    @id @default(cuid())
-	identifier String
-	value      String
-	expiresAt  DateTime
-	createdAt  DateTime?
-	updatedAt  DateTime?
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-	@@map("verification")
+  @@index([identifier])
+  @@map("verification")
 }
 
 /* PRD models */
@@ -185,3 +186,4 @@ model Appointment {
 
   @@map("appointment")
 }
+

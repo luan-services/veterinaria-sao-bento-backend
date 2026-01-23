@@ -24,6 +24,11 @@ export const auth = betterAuth({
     emailAndPassword: {
         enabled: true,
     },
+    user: {
+        additionalFields: {
+            role: { type: "string"}
+        }
+    },
     hooks: {
         before: createAuthMiddleware(async (ctx) => {
             if (ctx.path === "/sign-up/email") { /* this guarantees this middleware only runs on register by e-mail route */

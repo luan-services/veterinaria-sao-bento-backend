@@ -50,8 +50,14 @@ export const auth = betterAuth({
     },
     socialProviders: {
         google: {
-        clientId: process.env.GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+            mapProfileToUser: (profile) => {
+                return {
+                    /* when log in with google, it will fill our lastName custom field with google's 'family_name' */
+                    lastName: profile.family_name, /* Google sends 'family_name' for the last name */
+                }
+            },
         },
     },
     trustedOrigins: process.env.NODE_ENV === "production" ? 

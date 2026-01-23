@@ -73,6 +73,12 @@ export const auth = betterAuth({
                     }
                     
                 }
+
+                if (body?.lastName === "") {
+                        throw new APIError("BAD_REQUEST", {
+                            message: "Last Name is expected to have at least 1 character"
+                        });
+                }
             }
         }),
     },

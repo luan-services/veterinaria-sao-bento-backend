@@ -4,17 +4,42 @@ import { prisma } from "./prisma.js";
 import { APIError } from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";
 import { z } from "zod";
+import { cpf } from "cpf-cnpj-validator";
 
-/* validation schema for password */
-const passwordSchema = z.object({
-    password: z.string()
-    .min(8, "Password is expected to have more than 8 characters")
-    .max(60, "Password is expected to have less than 60 characters")
-    .regex(/[A-Z]/, "Password is expected to have at least a upper case letter")
-    .regex(/[a-z]/, "Password is expected to have at least a lower case letter")
-    .regex(/[0-9]/, "Password is expected to have at least a number")
-    .regex(/[\W_]/, "Password is expected to have at least a symbol")
-})
+export const userRegisterSchema = z.object({
+    password: z.string().trim()
+        .min(8, "Password is expected to have more than 8 characters")
+        .max(60, "Password is expected to have less than 60 characters")
+        .regex(/[A-Z]/, "Password is expected to have at least one uppercase letter")
+        .regex(/[a-z]/, "Password is expected to have at least one lowercase letter")
+        .regex(/[0-9]/, "Password is expected to have at least one number")
+        .regex(/[\W_]/, "Password is expected to have at least one symbol"),
+    name: z.string().trim()
+        .min(1, "Name can't be blank")
+        .max(60, "Name is expected to have less than 60 characters")
+        .regex(/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/, "Name must contain only letters"),
+    lastName: z.string().trim()
+        .min(1, "Last name can't be blank")
+        .max(60, "Last name is expected to have less than 60 characters")
+        .regex(/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/, "Last name must contain only letters"),
+});
+
+export const userUpdateSchema = z.object({
+    name: z.string().trim()
+        .min(1, "Name can't be blank")
+        .max(60, "Name is expected to have less than 60 characters")
+        .regex(/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/, "Name must contain only letters"),
+    lastName: z.string().trim()
+        .min(1, "Last name can't be blank")
+        .max(60, "Last name is expected to have less than 60 characters")
+        .regex(/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/, "Last name must contain only letters"),
+    phone: z.string().trim()
+        .regex(/^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/, "Invalid phone number format"),
+    cpf: z.string().trim()
+        .refine((value) => cpf.isValid(value), {
+            message: "Invalid CPF", 
+        })
+});
 
 export const auth = betterAuth({
     database: prismaAdapter(prisma, {
@@ -52,6 +77,7 @@ export const auth = betterAuth({
             },
             cpf: {
                 type: "string",
+                required: false,
                 input: true,
                 returned: false
             }
@@ -59,25 +85,26 @@ export const auth = betterAuth({
     },
     hooks: {
         before: createAuthMiddleware(async (ctx) => {
+            console.log(ctx.path);
             if (ctx.path === "/sign-up/email") { /* this guarantees this middleware only runs on register by e-mail route */
                 const body = ctx.body; 
+                const validation = userRegisterSchema.safeParse(body); 
 
-                if (body?.password) {
-                    /* if body.password exists validate it with zod schema */
-                    const validation = passwordSchema.safeParse({password: body.password}); 
-
-                    if (!validation.success) { /* if not valid, throws better auth API Error */
-                        throw new APIError("BAD_REQUEST", {
-                            message: validation.error.issues[0].message
-                        });
-                    }
-                    
+                if (!validation.success) { /* if not valid, throws better auth API Error */
+                    throw new APIError("BAD_REQUEST", {
+                        message: validation.error.issues[0].message
+                    });
                 }
+            }
 
-                if (body?.lastName === "") {
-                        throw new APIError("BAD_REQUEST", {
-                            message: "Last Name is expected to have at least 1 character"
-                        });
+            if (ctx.path === "/update-user") { /* this guarantees this middleware only runs when user tries to udpate their data */
+                const body = ctx.body; 
+                const validation = userUpdateSchema.partial().safeParse(body); 
+                
+                if (!validation.success) { /* if not valid, throws better auth API Error */
+                    throw new APIError("BAD_REQUEST", {
+                        message: validation.error.issues[0].message
+                    });
                 }
             }
         }),

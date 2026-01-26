@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { auth } from './lib/auth.js'
+import { errorMiddleware } from './middleware/error.js'
 
 const app = new Hono()
 
@@ -20,6 +21,8 @@ app.use('*', cors({
 	allowMethods: ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE'],
 	credentials: true, /* must use credentials true for cookies */
 }))
+
+app.onError(errorMiddleware());
 
 app.get('/', (c) => {
 	return c.text('Hello Hono!')

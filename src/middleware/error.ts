@@ -8,6 +8,7 @@ const status_code_map: Record<number, string> = {
     401: "UNAUTHORIZED",
     403: "FORBIDDEN",
     404: "NOT_FOUND",
+    409: "CONFLICT",
     429: "TOO_MANY_REQUESTS",
     500: "INTERNAL_SERVER_ERROR"
 };
@@ -39,6 +40,23 @@ export const errorMiddleware = () => {
                 code = 'VALIDATION_ERROR'
                 details = err.cause.issues
             }
+        }
+
+        /* prisma exclusive error handling tbat are not error 500 */
+        if ((err as any).code === 'P2002') {
+            status = 409
+            code = status_code_map[status];
+            message = "A record with this unique field already exists"
+        }
+        else if ((err as any).code === 'P2003') {
+            status = 409
+            code = status_code_map[status];
+            message = "Foreign Key constraint failed, a related record was not found or cannot be deleted"
+        }
+        else if ((err as any).code === 'P2025') {
+            status = 404
+            code = status_code_map[status];
+            message = "The requested resource could not be found"
         }
 
 

@@ -121,8 +121,8 @@ export const auth = betterAuth({
             },
         },
     },
-    trustedOrigins: process.env.NODE_ENV === "production" ? 
-        [process.env.ALLOWED_CORS_URLS!] : ["http://localhost:3000"], /* allow next (port 3000) to access this provider */
+    trustedOrigins: process.env.NODE_ENV === "production" && process.env.ALLOWED_CORS_URLS ? 
+        JSON.parse(process.env.ALLOWED_CORS_URLS) : ["http://localhost:3000", "*"], /* allow next (port 3000) to access this provider */
     advanced: {
         useSecureCookies: process.env.NODE_ENV === "production" 
     }

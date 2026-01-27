@@ -3,7 +3,6 @@ import { authMiddleware, type AuthEnv } from '../../middleware/auth.js';
 import { HTTPException } from 'hono/http-exception';
 import { petsService } from "./pets.service.js"; /* listByFilter, listByUser, getById, create, update, delete */
 import { createPetSchema, listPetsQuerySchema, updatePetSchema } from './pets.schema.js';
-import { zValidator } from '@hono/zod-validator'; /* middleware library to validate *body* inputs before they reach the controller */
 
 const app = new Hono<AuthEnv>()
 
@@ -55,7 +54,7 @@ app.get('/', async (ctx) => {
 	const validation = listPetsQuerySchema.safeParse(rawQuery);
 
 	if (!validation.success) {
-		throw new HTTPException(400, {  message: "Validation failed, invalid filters", cause: validation.error })
+		throw new HTTPException(400, {  message: "Validation Error, invalid params", cause: validation.error })
     }
 
 	const query = validation.data;
@@ -73,34 +72,44 @@ app.get('/', async (ctx) => {
 /* @desc create a new pet
    @route POST https://example.com/api/pets
    @access private (USER, ADMIN) */
-app.post('/', zValidator('json', createPetSchema), async (ctx) => {
+app.post('/', async (ctx) => {
 	const user = ctx.get("user");
 
 	if (!user) {
 		throw new HTTPException(401, { message: "Unauthorized" });
 	}
 
-	const body = ctx.req.valid("json") /* gets the already validated body by zValidator */
+	const body = await ctx.req.json()
+	const validation = createPetSchema.safeParse(body)
 
-	const newPet = await petsService.create(user.id, body);
+	if (!validation.success) {
+		throw new HTTPException(400, {  message: "Validation Error, invalid body", cause: validation.error })
+    }
+
+	const newPet = await petsService.create(user.id, validation.data);
 	return ctx.json(newPet, 201);
 })
 
 /* @desc update an user's pet fields 
    @route PATCH https://example.com/api/pets/:id
    @access private (USER, ADMIN) */
-app.patch('/:id', zValidator('json', updatePetSchema), async (ctx) => {
+app.patch('/:id', async (ctx) => {
 	const user = ctx.get("user");
 
 	if (!user) {
 		throw new HTTPException(401, { message: "Unauthorized" });
 	}
 
+	const body = await ctx.req.json()
+	const validation = updatePetSchema.safeParse(body)
+
+	if (!validation.success) {
+		throw new HTTPException(400, {  message: "Validation Error, invalid body", cause: validation.error })
+    }
+
 	const petId = ctx.req.param('id');
 
-	const body = ctx.req.valid("json") /* gets the already validated body by zValidator */
-
-	const updatedPet = await petsService.update(petId, user.id, body);
+	const updatedPet = await petsService.update(petId, user.id, validation.data);
 	return ctx.json(updatedPet, 200);
 })
 

@@ -9,17 +9,24 @@ import petsRouter from "./routes/pets/pets.routes.js"
 
 const app = new Hono()
 
+const allowedOrigins = process.env.ALLOWED_CORS_URLS ? JSON.parse(process.env.ALLOWED_CORS_URLS) : ["http://localhost:3000"];
+
 app.use('*', cors({
 	origin: (origin, c) => {
 
+		if (!origin) {
+			return origin;
+		}
+
 		if (process.env.NODE_ENV !== 'production') {
-			return origin || 'http://localhost:3000';
+			return origin;
 		}
 		
-		const allowedOrigin = process.env.ALLOWED_CORS_URLS;
+		if (allowedOrigins.includes(origin)) {
+			return origin;
+		}
 		
-		// Retorna a origem se bater, ou null se não bater
-		return origin === allowedOrigin ? origin : null;
+		return null;
 	},
 	allowMethods: ['POST', 'GET', 'OPTIONS', 'PUT', 'PATCH', 'DELETE'],
 	credentials: true, /* must use credentials true for cookies */

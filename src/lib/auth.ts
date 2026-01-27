@@ -41,6 +41,16 @@ export const userUpdateSchema = z.object({
         })
 });
 
+const allowedOrigins = process.env.ALLOWED_CORS_URLS ? JSON.parse(process.env.ALLOWED_CORS_URLS) : ["http://localhost:3000"];
+
+const getTrustedOrigins = () => {
+    if (process.env.NODE_ENV !== "production") {
+        return ["http://localhost:3000"];
+    }
+
+    return allowedOrigins;
+};
+
 export const auth = betterAuth({
     database: prismaAdapter(prisma, {
         provider: "postgresql", 
@@ -121,8 +131,7 @@ export const auth = betterAuth({
             },
         },
     },
-    trustedOrigins: process.env.NODE_ENV === "production" && process.env.ALLOWED_CORS_URLS ? 
-        JSON.parse(process.env.ALLOWED_CORS_URLS) : ["http://localhost:3000", "*"], /* allow next (port 3000) to access this provider */
+    trustedOrigins: getTrustedOrigins(), /* allow next (port 3000) to access this provider */
     advanced: {
         useSecureCookies: process.env.NODE_ENV === "production" 
     }

@@ -22,6 +22,15 @@ export const errorMiddleware = () => {
         let message = "Internal Server Error"
         let details = undefined
 
+        /* if it is a syntax error (user send a bad json format), we handle it here */
+        if (err instanceof SyntaxError && err.message.includes('JSON')) {
+            return ctx.json({
+                success: false,
+                message: "Invalid JSON format in request body",
+                code: "INVALID_JSON"
+            }, 400);
+        }
+
         /* if it was thrown by the backend logic, it is a known error, so we handle it */
         if (err instanceof HTTPException) {
             status = err.status
@@ -42,7 +51,7 @@ export const errorMiddleware = () => {
             }
         }
 
-        /* prisma exclusive error handling tbat are not error 500 */
+        /* prisma might also throw errors some times, we handle it here to avoid everything that is from prisma being error 500 */
         if ((err as any).code === 'P2002') {
             status = 409
             code = status_code_map[status];
@@ -60,7 +69,7 @@ export const errorMiddleware = () => {
         }
 
 
-        /* log only system errors */
+        /* log only system errors on production */
         if (status >= 500 || process.env.NODE_ENV !== "production") {
             console.error('System Error:', err)
         }

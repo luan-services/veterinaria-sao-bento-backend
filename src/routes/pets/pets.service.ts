@@ -1,20 +1,16 @@
 import {prisma} from "../../lib/prisma.js";
 import { z } from 'zod';
-import { createPetSchema, updatePetSchema } from "./pets.schema.js";
+import { createPetSchema, updatePetSchema, listPetsQuerySchema } from "./pets.schema.js";
 
 type CreatePetInput = z.infer<typeof createPetSchema>;
 type UpdatePetInput = z.infer<typeof updatePetSchema>;
+type ListPetsParamsInput = z.infer<typeof listPetsQuerySchema>;
 
-interface ListPetsParams {
-    userId?: string;
-    species?: "DOG" | "CAT";
-    name?: string;
-    breed?: string;
-}
+/* MUST IMPLEMENT PAGINATION */
 
 export const petsService = {
 
-    async listByFilter(filters?: ListPetsParams) {
+    async listByFilter(filters?: ListPetsParamsInput) {
         return await prisma.pet.findMany({
             where: {
                 ownerId: filters?.userId, 
@@ -36,9 +32,24 @@ export const petsService = {
         });
     },
 
-    async listByUser(userId: string) {
+    async listByUser(userId: string, filters?: ListPetsParamsInput) {
         return await prisma.pet.findMany({
-            where: { ownerId: userId },
+            where: {
+                ownerId: userId,
+                species: filters?.species, 
+
+                /* parcial and case-insensitive search */
+                name: filters?.name ? {
+                    contains: filters.name,
+                    mode: 'insensitive'
+                } : undefined,
+                
+                /* parcial and case-insensitive search */
+                breed: filters?.breed ? {
+                    contains: filters.breed,
+                    mode: 'insensitive'
+                } : undefined
+            },
             orderBy: { createdAt: 'desc' }
         });
     },

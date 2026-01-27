@@ -113,7 +113,7 @@ export const petsService = {
             throw new HTTPException(404, { message: "Pet not found" });
         }
 
-        if (existingPet.ownerId !== userId && userRole != "ADMIN") {
+        if (existingPet.ownerId !== userId && userRole !== "ADMIN") {
             throw new HTTPException(403, { message: "You are not allowed to delete this pet" });
         }
 

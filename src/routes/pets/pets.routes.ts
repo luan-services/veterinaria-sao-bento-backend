@@ -47,7 +47,7 @@ app.get('/me', async (ctx) => {
 app.get('/', async (ctx) => {
     const user = ctx.get("user");
 
-	if (!user || user.role == "ADMIN") {
+	if (!user || user.role !== "ADMIN") {
 		throw new HTTPException(401, { message: "Unauthorized" });
 	}
 

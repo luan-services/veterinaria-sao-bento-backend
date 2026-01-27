@@ -61,7 +61,7 @@ export const errorMiddleware = () => {
 
 
         /* log only system errors */
-        if (status >= 500) {
+        if (status >= 500 || process.env.NODE_ENV !== "production") {
             console.error('System Error:', err)
         }
 

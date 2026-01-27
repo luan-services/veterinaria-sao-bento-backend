@@ -21,7 +21,7 @@ app.use('*', cors({
 		// Retorna a origem se bater, ou null se não bater
 		return origin === allowedOrigin ? origin : null;
 	},
-	allowMethods: ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE'],
+	allowMethods: ['POST', 'GET', 'OPTIONS', 'PUT', 'PATCH', 'DELETE'],
 	credentials: true, /* must use credentials true for cookies */
 }))
 

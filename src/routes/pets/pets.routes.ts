@@ -20,7 +20,7 @@ app.get('/me', async (ctx) => {
 		throw new HTTPException(401, { message: "Unauthorized" });
 	}
 
-	const rawQuery = ctx.req.query;
+	const rawQuery = ctx.req.query();
 	const validation = listPetsQuerySchema.safeParse(rawQuery);
 
 	if (!validation.success) {
@@ -51,7 +51,7 @@ app.get('/', async (ctx) => {
 		throw new HTTPException(401, { message: "Unauthorized" });
 	}
 
-	const rawQuery = ctx.req.query;
+	const rawQuery = ctx.req.query();
 	const validation = listPetsQuerySchema.safeParse(rawQuery);
 
 	if (!validation.success) {

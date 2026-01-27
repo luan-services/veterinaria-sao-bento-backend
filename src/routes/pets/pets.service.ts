@@ -1,6 +1,7 @@
 import {prisma} from "../../lib/prisma.js";
 import { z } from 'zod';
 import { createPetSchema, updatePetSchema, listPetsQuerySchema } from "./pets.schema.js";
+import { HTTPException } from "hono/http-exception";
 
 type CreatePetInput = z.infer<typeof createPetSchema>;
 type UpdatePetInput = z.infer<typeof updatePetSchema>;
@@ -73,27 +74,53 @@ export const petsService = {
     },
 
     async update(petId: string, userId: string, data: UpdatePetInput) {
+
+        const existingPet = await prisma.pet.findUnique({
+            where: { 
+                id: petId 
+            }
+        });
+
+        /* there are two possible errors here, we need to throw them because prisma would only throw a generic not found error */
+        if (!existingPet) {
+            throw new HTTPException(404, { message: "Pet not found" });
+        }
+
+        if (existingPet.ownerId !== userId) {
+            throw new HTTPException(403, { message: "You are not allowed to update this pet" });
+        }
+
         return await prisma.pet.update({ 
             where: {
                 id: petId
             },
             data: {
                 ...data,
-                /* ownerId: userId -> optional, add only if changing owner is acceptable */
             }
         });
     },
 
-    async delete(petId: string, userId: string) {
-        // Primeiro verifica se o pet existe e é do dono
-        const pet = await prisma.pet.findFirst({
-            where: { id: petId, ownerId: userId }
+    async delete(petId: string, userId: string, userRole: string) {
+        
+        const existingPet = await prisma.pet.findUnique({
+            where: { 
+                id: petId 
+            }
         });
 
-        if (!pet) return null;
+        /* there are two possible errors here, we need to throw them because prisma would only throw a generic not found error */
+        if (!existingPet) {
+            throw new HTTPException(404, { message: "Pet not found" });
+        }
+
+        if (existingPet.ownerId !== userId && userRole != "ADMIN") {
+            throw new HTTPException(403, { message: "You are not allowed to delete this pet" });
+        }
 
         return await prisma.pet.delete({
-            where: { id: petId }
+            where: { 
+                id: petId 
+            }
         });
     }
 };

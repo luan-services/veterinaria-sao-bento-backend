@@ -4,6 +4,9 @@ import { cors } from 'hono/cors'
 import { auth } from './lib/auth.js'
 import { errorMiddleware } from './middleware/error.js'
 
+/* routes */
+import petsRouter from "./routes/pets/pets.routes.js"
+
 const app = new Hono()
 
 app.use('*', cors({
@@ -23,6 +26,8 @@ app.use('*', cors({
 }))
 
 app.onError(errorMiddleware());
+
+app.route('/api/pets', petsRouter);
 
 app.get('/', (c) => {
 	return c.text('Hello Hono!')

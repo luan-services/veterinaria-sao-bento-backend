@@ -11,7 +11,7 @@ import professionalsRouter from "./routes/professionals/professionals.routes.js"
 
 const app = new Hono()
 
-const allowedOrigins = process.env.ALLOWED_CORS_URLS ? JSON.parse(process.env.ALLOWED_CORS_URLS) : ["https://refactored-adventure-97wrq97555jxf77j9-3000.app.github.dev"];
+const allowedOrigins = process.env.ALLOWED_CORS_URLS ? JSON.parse(process.env.ALLOWED_CORS_URLS) : ["http://localhost:3000"];
 
 app.use('*', cors({
 	origin: (origin, c) => {

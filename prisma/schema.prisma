@@ -137,8 +137,9 @@ model Professional {
 model Location {
   id          String        @id @default(cuid())
   name        String        // Ex: "Unidade Centro"
+  city        String
   address     String
-  
+  zipCode     String
   /* relationships */
   appointments Appointment[]
 

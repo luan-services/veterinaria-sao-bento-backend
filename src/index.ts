@@ -6,10 +6,11 @@ import { errorMiddleware } from './middleware/error.js'
 
 /* routes */
 import petsRouter from "./routes/pets/pets.routes.js"
+import locationsRouter from "./routes/locations/locations.routes.js"
 
 const app = new Hono()
 
-const allowedOrigins = process.env.ALLOWED_CORS_URLS ? JSON.parse(process.env.ALLOWED_CORS_URLS) : ["http://localhost:3000"];
+const allowedOrigins = process.env.ALLOWED_CORS_URLS ? JSON.parse(process.env.ALLOWED_CORS_URLS) : ["https://refactored-adventure-97wrq97555jxf77j9-3000.app.github.dev"];
 
 app.use('*', cors({
 	origin: (origin, c) => {
@@ -35,6 +36,7 @@ app.use('*', cors({
 app.onError(errorMiddleware());
 
 app.route('/api/pets', petsRouter);
+app.route('/api/locations', locationsRouter);
 
 app.get('/', (c) => {
 	return c.text('Hello Hono!')

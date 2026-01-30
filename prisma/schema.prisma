@@ -176,11 +176,11 @@ model Appointment {
   petId         String
   pet           Pet               @relation(fields: [petId], references: [id])
   
-  professionalId String
-  professional   Professional     @relation(fields: [professionalId], references: [id])
+  professionalId String?
+  professional   Professional?     @relation(fields: [professionalId], references: [id])
   
-  locationId    String
-  location      Location          @relation(fields: [locationId], references: [id])
+  locationId    String?
+  location      Location?          @relation(fields: [locationId], references: [id])
 
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt

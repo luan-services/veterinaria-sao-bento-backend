@@ -3,6 +3,9 @@ import { z } from "zod";
 export const createAppointmentSchema = z.object({
     date: z.date()
         .refine((date) => date > new Date(), { message: "Appointments cannot happen in the past" }),
+    duration: z.number() /* duration will sun to date and turn into 'endDate' */
+        .min(15)
+        .max(50), 
     serviceType: z.enum(["CONSULTATION", "VACCINATION", "EXAM", "CHECKUP", "BATH_GROOMING"]),
     notes: z.string()
         .max(500)
@@ -19,7 +22,11 @@ export const createAppointmentSchema = z.object({
 
 /* only for admin */
 export const updateAppointmentSchema = z.object({
-    date: z.date().optional(),
+    date: z.date()
+        .optional(),
+    duration: z.number() /* duration will sun to date and turn into 'endDate' */
+        .min(15)
+        .max(50),
     serviceType: z.enum(["CONSULTATION", "VACCINATION", "EXAM", "CHECKUP", "BATH_GROOMING"])
         .optional(),
     status: z.enum(["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"])
@@ -40,6 +47,14 @@ export const listAppointmentsQuerySchema = z.object({
         .optional(),
     endDate: z.date()
         .optional(),
-    status: z.enum(["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"]).optional(),
-    professionalId: z.string().optional(),
+    status: z.enum(["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"])
+        .optional(),
+    serviceType: z.enum(["CONSULTATION", "VACCINATION", "EXAM", "CHECKUP", "BATH_GROOMING"])
+        .optional(),
+    professionalId: z.string()
+        .max(50, "Professional ID is expected to have less than 50 characters")
+        .optional(),
+    locationId: z.string()
+        .max(50, "Location ID is expected to have less than 50 characters")
+        .optional(),
 });

@@ -237,7 +237,7 @@ export const appointmentsService = {
     async listByFilter(userRole: string, userId: string, filters?: ListAppointmentsParamsInput) {
 
         if (userRole !== "ADMIN") {
-            throw new HTTPException(401, { message: "Unauthorized" });
+            throw new HTTPException(403, { message: "Forbbiden" });
         }
 
         const dateClause:any = {};

@@ -8,7 +8,7 @@ import { errorMiddleware } from './middleware/error.js'
 import petsRouter from "./routes/pets/pets.routes.js"
 import locationsRouter from "./routes/locations/locations.routes.js"
 import professionalsRouter from "./routes/professionals/professionals.routes.js"
-import appointmentRouter from "./routes/appointments/appointments.routes.js"
+import appointmentsRouter from "./routes/appointments/appointments.routes.js"
 
 const app = new Hono()
 
@@ -40,7 +40,7 @@ app.onError(errorMiddleware());
 app.route('/api/pets', petsRouter);
 app.route('/api/locations', locationsRouter);
 app.route('/api/professionals', professionalsRouter);
-app.route('/api/appointments', professionalsRouter);
+app.route('/api/appointments', appointmentsRouter);
 
 app.get('/', (c) => {
 	return c.text('Hello Hono!')

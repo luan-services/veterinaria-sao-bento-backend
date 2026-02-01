@@ -8,33 +8,28 @@ type CreateAppointmentInput = z.infer<typeof createAppointmentSchema>;
 type UpdateAppointmentInput = z.infer<typeof updateAppointmentSchema>;
 type ListAppointmentsParamsInput = z.infer<typeof listAppointmentsQuerySchema>;
 
-/* helper to get 1 hour time window based on date */
-const getTimeWindow = (date: Date) => {
-    const start = new Date(date);
-    const end = new Date(date);
-    end.setHours(end.getHours() + 1); // Adiciona 1 hora
-    return { start, end };
-};
-
 /* admins can register more than one appointment per date */
 
 /* MUST IMPLEMENT PAGINATION */
 
 export const appointmentsService = {
 
+    /*
+        general user services 
+    */
+
     /* this service is exclusive to check the schedule map on frontend */
     async getSchedule(filters?: ListAppointmentsParamsInput) {
 
         const now = new Date();
-        const threeMonthsLater = new Date(now);
-        threeMonthsLater.setMonth(threeMonthsLater.getMonth() + SCHEDULE_MAXIMUM_DATE);
+        const maximumDate = new Date(now);
+        maximumDate.setMonth(maximumDate.getMonth() + SCHEDULE_MAXIMUM_DATE);
 
         const queryStartDate = filters?.startDate ? new Date(filters.startDate) : now;
-        const queryEndDate = filters?.endDate ? new Date(filters.endDate) : threeMonthsLater;
+        const queryEndDate = filters?.endDate ? new Date(filters.endDate) : maximumDate;
 
         return await prisma.appointment.findMany({
             where: {
-                // Filtramos apenas status que ocupam a agenda (ignoramos cancelados e recusados)
                 status: { not: "CANCELLED" }, 
                 serviceType: filters?.serviceType,
                 professionalId: filters?.professionalId,
@@ -46,13 +41,12 @@ export const appointmentsService = {
             },
             select: { /* using select, we get only needed to make the schedule */
                 id: true,           
-                date: true,           // Início
-                endDate: true,        // Fim (Crucial para desenhar o bloco)
-                status: true,         // Para mostrar se está confirmado ou pendente
-                serviceType: true,    // Opcional: Para colorir o bloco na agenda (ex: Banho = Azul)
-                professionalId: true, // Para saber em qual coluna colocar
-                locationId: true      // Para saber de qual unidade é
-                // userId, petId, notes, pet, user -> FICAM DE FORA
+                date: true,         
+                endDate: true,      
+                status: true,        
+                serviceType: true,   
+                professionalId: true, 
+                locationId: true      
             },
             orderBy: { date: 'asc' }
         });
@@ -216,7 +210,7 @@ export const appointmentsService = {
 
             if (diffInHours < CANCEL_APPOINTMENT_TIME_LIMIT) {
                 throw new HTTPException(403, { 
-                    message: `Appointments can only be cancelled at least ${CANCEL_APPOINTMENT_TIME_LIMIT} hours in advance.` 
+                    message: `Appointments can only be cancelled at least ${CANCEL_APPOINTMENT_TIME_LIMIT} hours in advance` 
                 });
             }
         }
@@ -236,44 +230,10 @@ export const appointmentsService = {
         });
     },
 
-    async update(appointmentId: string, userRole:string, data: UpdateAppointmentInput) {
+    /*
+        admin only services
+    */
 
-        if (userRole !== "ADMIN") {
-            throw new HTTPException(403, { message: "You are not allowed to access this route" });
-        }
-        
-        const existingAppointment = await prisma.appointment.findUnique({
-            where: { 
-                id: appointmentId
-            }
-        });
-
-        /* there are two possible errors here, we need to throw them because prisma would only throw a generic not found error */
-        if (!existingAppointment) {
-            throw new HTTPException(404, { message: "Appointment not found" });
-        }
-
-        let start = undefined;
-        let end = undefined;
-
-        if (data.date) {
-            start = data.date
-            end = new Date(start.getTime() + data?.duration * 60 * 1000);
-        }
-
-        return await prisma.appointment.update({ 
-            where: {
-                id: appointmentId
-            },
-            data: {
-                ...data,
-                date: start,
-                endDate: end
-            }
-        });
-    },
-    
-    /* listing route for admin only */
     async listByFilter(userRole: string, userId: string, filters?: ListAppointmentsParamsInput) {
 
         if (userRole !== "ADMIN") {
@@ -306,7 +266,50 @@ export const appointmentsService = {
         });
     },
 
-    /* only admins can delete appointments tables */
+    async update(appointmentId: string, userRole:string, data: UpdateAppointmentInput) {
+
+        if (userRole !== "ADMIN") {
+            throw new HTTPException(403, { message: "You are not allowed to access this route" });
+        }
+        
+        const existingAppointment = await prisma.appointment.findUnique({
+            where: { 
+                id: appointmentId
+            }
+        });
+
+        /* there are two possible errors here, we need to throw them because prisma would only throw a generic not found error */
+        if (!existingAppointment) {
+            throw new HTTPException(404, { message: "Appointment not found" });
+        }
+
+        /* admins can update the appointment table by any means, passing through any date time or appointment quantity per 
+        user constraint */
+
+        let start = data.date ? new Date(data.date) : existingAppointment.date;
+        let end = undefined;
+
+        /* if there is duration, calculates it based on start (new or old) */
+        if(data.duration) {
+            end = new Date(start.getTime() + data.duration * 60 * 1000);
+        } 
+        else if (data.date) { /* if not, but if have a new start, calculates it based on new start */
+            const originalDuration = existingAppointment.endDate.getTime() - existingAppointment.date.getTime();
+            end = new Date(start.getTime() + originalDuration);
+        }
+
+        return await prisma.appointment.update({ 
+            where: {
+                id: appointmentId
+            },
+            data: {
+                ...data,
+                date: start,
+                endDate: end
+            }
+        });
+    },
+    
     async delete(appointmentId: string, userRole: string) {
         
         if (userRole !== "ADMIN") {

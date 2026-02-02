@@ -58,6 +58,16 @@ export const auth = betterAuth({
     secret: process.env.BETTER_AUTH_SECRET,
     emailAndPassword: {
         enabled: true,
+        requireEmailVerification: true, /* make verifying required before login */
+    },
+    emailVerification: {
+        sendOnSignUp: true, /* when register, it will automatically send an email */
+        autoSignInAfterVerification: true,/* user sign in after verification */
+        sendVerificationEmail: async ({ user, url, token }, request) => {
+            /* here is where we should add an e-mail provider to send a mail with the 
+            verification url to the user, for now, we just log on the console */
+            console.log(url)
+        }
     },
     user: {
         additionalFields: {

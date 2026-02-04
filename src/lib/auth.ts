@@ -59,6 +59,11 @@ export const auth = betterAuth({
     emailAndPassword: {
         enabled: true,
         requireEmailVerification: true, /* make verifying required before login */
+        sendResetPassword: async ({user, url, token}, request) => {
+            /* here is where we should add an e-mail provider to send a mail with the 
+            verification url to the user, for now, we just log on the console */
+            console.log(url)
+        },
     },
     emailVerification: {
         sendOnSignUp: true, /* when register, it will automatically send an email */
@@ -69,6 +74,7 @@ export const auth = betterAuth({
             console.log(url)
         }
     },
+    
     user: {
         additionalFields: {
             lastName: {

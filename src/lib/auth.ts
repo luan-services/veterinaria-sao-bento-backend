@@ -41,6 +41,20 @@ export const userUpdateSchema = z.object({
         })
 });
 
+export const passwordUpdateSchema = z.object({
+    newPassword: z.string().trim()
+        .min(8, "Password is expected to have more than 8 characters")
+        .max(60, "Password is expected to have less than 60 characters")
+        .regex(/[A-Z]/, "Password is expected to have at least one uppercase letter")
+        .regex(/[a-z]/, "Password is expected to have at least one lowercase letter")
+        .regex(/[0-9]/, "Password is expected to have at least one number")
+        .regex(/[\W_]/, "Password is expected to have at least one symbol"),
+    token: z.string().trim()
+        .min(1, "Token can't be blank")
+        .max(200, "Name is expected to have less than 200 characters"),
+
+});
+
 const allowedOrigins = process.env.ALLOWED_CORS_URLS ? JSON.parse(process.env.ALLOWED_CORS_URLS) : ["http://localhost:3000"];
 
 const getTrustedOrigins = () => {
@@ -128,6 +142,18 @@ export const auth = betterAuth({
                 const validation = userUpdateSchema.partial().safeParse(body); 
                 
                 if (!validation.success) { /* if not valid, throws better auth API Error */
+                    throw new APIError("BAD_REQUEST", {
+                        message: validation.error.issues[0].message
+                    });
+                }
+            }
+
+            if (ctx.path === "/reset-password") { /* this is for the new reset password route, we should parse the same password rules here */
+                const body = ctx.body; 
+
+                const validation = passwordUpdateSchema.safeParse(body);
+
+                if (!validation.success) {
                     throw new APIError("BAD_REQUEST", {
                         message: validation.error.issues[0].message
                     });

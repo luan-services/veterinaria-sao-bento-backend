@@ -38,6 +38,8 @@ model User {
   phone         String?   
   address       String?
 
+  profileCompleted Boolean @default(false)
+
   /* PRD relationship */
   pets          Pet[]
   appointments  Appointment[]
@@ -56,8 +58,6 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  profileCompleted Boolean @default(false)
 
   @@unique([token])
   @@index([userId])

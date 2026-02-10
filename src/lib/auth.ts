@@ -120,6 +120,12 @@ export const auth = betterAuth({
                 required: false,
                 input: true,
                 returned: false
+            },
+            profileCompleted: { 
+                type: "boolean", 
+                returned: true, 
+                defaultValue: false,
+                required: false
             }
         }
     },

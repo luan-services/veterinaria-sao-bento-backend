@@ -57,6 +57,8 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  profileCompleted Boolean @default(false)
+
   @@unique([token])
   @@index([userId])
   @@map("session")

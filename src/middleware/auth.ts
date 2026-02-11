@@ -11,6 +11,8 @@ export type AuthEnv = {
 };
 
 export const authMiddleware = createMiddleware<AuthEnv>(async (ctx, next) => {
+    /* since our application is based on cookies only (better auth standart), this application checks for headers with the cookie,
+    every fetch to protected routes on frontend must have crendentials: true on it */
     const headers = ctx.req.raw.headers;
 
     const session = await auth.api.getSession({
@@ -24,7 +26,6 @@ export const authMiddleware = createMiddleware<AuthEnv>(async (ctx, next) => {
         throw new HTTPException(401, { message: 'Invalid or expired Session' })
     }
     
-
     ctx.set("user", session.user);
     ctx.set("session", session.session);
 

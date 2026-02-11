@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { authMiddleware, type AuthEnv } from '../../middleware/auth.js';
+import { requireCompleteProfileMiddleware } from '../../middleware/completeProfile.js';
 import { HTTPException } from 'hono/http-exception';
 import { petsService } from "./pets.service.js"; /* listByFilter, listByUser, getById, create, update, delete */
 import { createPetSchema, listPetsQuerySchema, updatePetSchema } from './pets.schema.js';
@@ -8,6 +9,8 @@ const app = new Hono<AuthEnv>()
 
 /* auth middleware to guarantee only authenticated users has access to these routes */
 app.use('*', authMiddleware);
+
+app.use('*', requireCompleteProfileMiddleware);
 
 /* @desc list the current user's pets with filtering
    @route GET https://example.com/api/pets/me?name=Rex&species=DOG&breed=pitbull

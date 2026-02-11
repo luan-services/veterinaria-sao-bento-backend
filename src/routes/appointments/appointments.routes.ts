@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { authMiddleware, type AuthEnv } from '../../middleware/auth.js';
+import { requireCompleteProfileMiddleware } from '../../middleware/completeProfile.js';
 import { HTTPException } from 'hono/http-exception';
 import { appointmentsService } from "./appointments.service.js";
 import { createAppointmentSchema, updateAppointmentSchema, listAppointmentsQuerySchema } from './appointments.schema.js';
@@ -7,6 +8,8 @@ import { createAppointmentSchema, updateAppointmentSchema, listAppointmentsQuery
 const app = new Hono<AuthEnv>()
 
 app.use('*', authMiddleware);
+
+app.use('*', requireCompleteProfileMiddleware);
 
 /* @desc public view of the schedule (available/busy slots)
    @route GET /api/appointments/schedule?startDate=...&endDate=...

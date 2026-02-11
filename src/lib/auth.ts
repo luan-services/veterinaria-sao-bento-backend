@@ -22,6 +22,12 @@ export const userRegisterSchema = z.object({
         .min(1, "Last name can't be blank")
         .max(60, "Last name is expected to have less than 60 characters")
         .regex(/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/, "Last name must contain only letters"),
+    phone: z.string().trim()
+        .regex(/^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/, "Invalid phone number format"),
+    cpf: z.string().trim()
+        .refine((value) => cpf.isValid(value), {
+            message: "Invalid CPF", 
+        })
 });
 
 export const userUpdateSchema = z.object({
@@ -141,6 +147,18 @@ export const auth = betterAuth({
                         message: validation.error.issues[0].message
                     });
                 }
+
+                /* since we are creating account with email, validation only works if profile is completed, 
+                so we set the profileCompleted field as true before sending to the backend */
+                return {
+                    context: {
+                        ...ctx,
+                        body: {
+                            ...ctx.body,
+                            profileCompleted: true,
+                        },
+                    }
+                };
             }
 
             if (ctx.path === "/update-user") { /* this guarantees this middleware only runs when user tries to udpate their data */
@@ -162,6 +180,33 @@ export const auth = betterAuth({
                 if (!validation.success) {
                     throw new APIError("BAD_REQUEST", {
                         message: validation.error.issues[0].message
+                    });
+                }
+            }
+        }),
+        after: createAuthMiddleware(async (ctx) => {
+            if (ctx.path === "/update-user") {
+                const userId = ctx.context.session?.user.id;
+                
+                if (!userId) {
+                    return; 
+                }
+
+                const user = await prisma.user.findUnique({
+                    where: { id: userId },
+                    select: { cpf: true, phone: true, profileCompleted: true }
+                });
+
+                if (!user) {
+                    return;
+                }
+
+                const isComplete = !!(user.cpf && user.phone);
+                console.log("Complete: ", isComplete)
+                if (user.profileCompleted !== isComplete) {
+                    await prisma.user.update({
+                        where: { id: userId },
+                        data: { profileCompleted: isComplete }
                     });
                 }
             }

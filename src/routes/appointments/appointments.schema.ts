@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const createAppointmentSchema = z.object({
-    date: z.date()
+    date: z.coerce.date()
         .refine((date) => date > new Date(), { message: "Appointments cannot happen in the past" }),
     duration: z.number() /* duration will sun to date and turn into 'endDate' */
         .min(15)
@@ -22,7 +22,7 @@ export const createAppointmentSchema = z.object({
 
 /* only for admin */
 export const updateAppointmentSchema = z.object({
-    date: z.date()
+    date: z.coerce.date()
         .optional(),
     duration: z.number() /* duration will sun to date and turn into 'endDate' */
         .min(15)
@@ -43,9 +43,9 @@ export const updateAppointmentSchema = z.object({
 });
 
 export const listAppointmentsQuerySchema = z.object({
-    startDate: z.date()
+    startDate: z.coerce.date()
         .optional(),
-    endDate: z.date()
+    endDate: z.coerce.date()
         .optional(),
     status: z.enum(["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"])
         .optional(),

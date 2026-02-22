@@ -23,11 +23,13 @@ export const userRegisterSchema = z.object({
         .max(60, "Last name is expected to have less than 60 characters")
         .regex(/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/, "Last name must contain only letters"),
     phone: z.string().trim()
-        .regex(/^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/, "Invalid phone number format"),
+        .regex(/^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/, "Invalid phone number format")
+        .transform((value) => value.replace(/\D/g, "")), // remove dots and dashes to send only numbers to backend
     cpf: z.string().trim()
         .refine((value) => cpf.isValid(value), {
             message: "Invalid CPF", 
         })
+        .transform((val) => val.replace(/\D/g, "")), // remove dots and dashes to send only numbers to backend
 });
 
 export const userUpdateSchema = z.object({

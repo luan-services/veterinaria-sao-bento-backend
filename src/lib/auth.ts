@@ -152,6 +152,19 @@ export const auth = betterAuth({
                     });
                 }
 
+                /* since our cpf field is unique, we must check if there is already an user registered with it to
+                throw an error and send a response to the frontend, if you don't do that, a generic error will be sent
+                and the front will have no clue what is the problem */
+                const existingUser = await prisma.user.findUnique({
+                    where: { cpf: validation.data.cpf },
+                });
+
+                if (existingUser) {
+                    throw new APIError("BAD_REQUEST", {
+                        message: "This CPF already exists",
+                    });
+                }
+
                 /* since we are creating account with email, validation only works if profile is completed, 
                 so we set the profileCompleted field as true before sending to the backend */
                 return {
@@ -159,6 +172,7 @@ export const auth = betterAuth({
                         ...ctx,
                         body: {
                             ...ctx.body,
+                            ...validation.data,
                             profileCompleted: true,
                         },
                     }
@@ -173,7 +187,30 @@ export const auth = betterAuth({
                     throw new APIError("BAD_REQUEST", {
                         message: validation.error.issues[0].message
                     });
+                };
+
+                /* since our cpf field is unique, we must check if there is already an user registered with it to
+                throw an error and send a response to the frontend, if you don't do that, a generic error will be sent
+                and the front will have no clue what is the problem */
+                const existingUser = await prisma.user.findUnique({
+                    where: { cpf: validation.data.cpf },
+                });
+
+                if (existingUser) {
+                    throw new APIError("BAD_REQUEST", {
+                        message: "This CPF already exists",
+                    });
                 }
+
+                return {
+                    context: {
+                        ...ctx,
+                        body: {
+                            ...ctx.body,
+                            ...validation.data, 
+                        }
+                    }
+                };
             }
 
             if (ctx.path === "/reset-password") { /* this is for the new reset password route, we should parse the same password rules here */
@@ -206,7 +243,7 @@ export const auth = betterAuth({
                 }
 
                 const isComplete = !!(user.cpf && user.phone);
-                console.log("Complete: ", isComplete)
+                
                 if (user.profileCompleted !== isComplete) {
                     await prisma.user.update({
                         where: { id: userId },

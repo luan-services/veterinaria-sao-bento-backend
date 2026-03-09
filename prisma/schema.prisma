@@ -35,8 +35,7 @@ model User {
   role          Role      @default(USER)
   lastName      String
   cpf           String?   @unique /* cpf is unique */
-  phone         String?   
-  address       String?
+  phone         String?
 
   profileCompleted Boolean @default(false)
 

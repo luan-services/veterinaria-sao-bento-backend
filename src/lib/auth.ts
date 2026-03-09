@@ -141,7 +141,7 @@ export const auth = betterAuth({
     },
     hooks: {
         before: createAuthMiddleware(async (ctx) => {
-            console.log(ctx.path);
+            process.env.NODE_ENV === "production" ? console.log(ctx.path) : "";
             if (ctx.path === "/sign-up/email") { /* this guarantees this middleware only runs on register by e-mail route */
                 const body = ctx.body; 
                 const validation = userRegisterSchema.safeParse(body); 

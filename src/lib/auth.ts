@@ -119,12 +119,6 @@ export const auth = betterAuth({
                 input: true,
                 returned: false
             },
-            address: {
-                type: "string",
-                required: false,
-                input: true,
-                returned: false
-            },
             cpf: {
                 type: "string",
                 required: false,

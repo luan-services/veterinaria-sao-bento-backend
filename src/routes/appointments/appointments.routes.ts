@@ -85,7 +85,7 @@ app.get('/', async (ctx) => {
 /* @desc request a new appointment
    @route POST /api/appointments
    @access Private (USER) */
-app.post('/', strictRateLimiter, async (ctx) => {
+app.post('/', strictRateLimiter(60 * 1000, 5), async (ctx) => {
     const user = ctx.get("user");
 
     if (!user) {
@@ -107,7 +107,7 @@ app.post('/', strictRateLimiter, async (ctx) => {
 /* @desc cancel an appointment (user cancels own, admin cancels any)
    @route PATCH /api/appointments/cancel/:id
    @access Private (USER, ADMIN) */
-app.patch('/:id/cancel', strictRateLimiter, async (ctx) => {
+app.patch('/:id/cancel', strictRateLimiter(60 * 1000, 5), async (ctx) => {
     const user = ctx.get("user");
     if (!user) {
         throw new HTTPException(401, { message: "Unauthorized" });
@@ -124,7 +124,7 @@ app.patch('/:id/cancel', strictRateLimiter, async (ctx) => {
 /* @desc general update for admins (reschedule, confirm, assign professional)
    @route PATCH /api/appointments/:id
    @access Private (ADMIN) */
-app.patch('/:id', strictRateLimiter, async (ctx) => {
+app.patch('/:id', strictRateLimiter(60 * 1000, 20), async (ctx) => {
     const user = ctx.get("user");
     
     if (!user) {
@@ -153,7 +153,7 @@ app.patch('/:id', strictRateLimiter, async (ctx) => {
 /* @desc hard delete an appointment (must be cancelled first)
    @route DELETE /api/appointments/:id
    @access Private (ADMIN ONLY) */
-app.delete('/:id', strictRateLimiter, async (ctx) => {
+app.delete('/:id', strictRateLimiter(60 * 1000, 20), async (ctx) => {
     const user = ctx.get("user");
     
     if (!user) {

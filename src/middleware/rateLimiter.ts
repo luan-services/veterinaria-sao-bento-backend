@@ -38,10 +38,9 @@ export const globalRateLimiter = rateLimiter({
     standardHeaders: true,
 });
 
-export const strictRateLimiter = rateLimiter<AuthEnv>({
-    windowMs: 60 * 1000,
-    limit: 10,
-
+export const strictRateLimiter = (window: number = 60 * 1000, limit: number = 10) => rateLimiter<AuthEnv>({
+    windowMs: window,
+    limit: limit,
     keyGenerator: (c) => {
         const user = c.get("user");
 
@@ -51,7 +50,6 @@ export const strictRateLimiter = rateLimiter<AuthEnv>({
 
         return getClientIp(c);
     },
-
     standardHeaders: true,
 });
 

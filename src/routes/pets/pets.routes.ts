@@ -77,7 +77,7 @@ app.get('/', async (ctx) => {
 /* @desc create a new pet
    @route POST https://example.com/api/pets
    @access private (USER, ADMIN) */
-app.post('/', strictRateLimiter, async (ctx) => {
+app.post('/', strictRateLimiter(60 * 1000, 5), async (ctx) => {
 	const user = ctx.get("user");
 
 	if (!user) {
@@ -98,7 +98,7 @@ app.post('/', strictRateLimiter, async (ctx) => {
 /* @desc update an user's pet fields 
    @route PATCH https://example.com/api/pets/:id
    @access private (USER, ADMIN) */
-app.patch('/:id', strictRateLimiter, async (ctx) => {
+app.patch('/:id', strictRateLimiter(), async (ctx) => {
 	const user = ctx.get("user");
 
 	if (!user) {
@@ -122,7 +122,7 @@ app.patch('/:id', strictRateLimiter, async (ctx) => {
 /* @desc list any pets with filtering
    @route GET https://example.com/api/pets/userId=1234&name=Rex&species=DOG&breed=pitbull
    @access private (ADMIN) */
-app.delete('/:id', strictRateLimiter, async (ctx) => {
+app.delete('/:id', strictRateLimiter(), async (ctx) => {
 	const user = ctx.get("user");
 
 	if (!user) {

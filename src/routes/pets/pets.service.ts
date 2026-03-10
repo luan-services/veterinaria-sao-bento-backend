@@ -2,6 +2,7 @@ import {prisma} from "../../lib/prisma.js";
 import { z } from 'zod';
 import { createPetSchema, updatePetSchema, listPetsQuerySchema } from "./pets.schema.js";
 import { HTTPException } from "hono/http-exception";
+import { PET_PER_USER_LIMIT } from "../../config/config.js";
 
 type CreatePetInput = z.infer<typeof createPetSchema>;
 type UpdatePetInput = z.infer<typeof updatePetSchema>;
@@ -65,6 +66,16 @@ export const petsService = {
     },
 
     async create(userId: string, data: CreatePetInput) {
+        const petCount = await prisma.pet.count({
+            where: {
+                ownerId: userId
+            }
+        });
+
+        if (petCount >= PET_PER_USER_LIMIT) {
+            throw new HTTPException(400, { message: "Maximun pet per user limit reached" });
+        }
+
         return await prisma.pet.create({
             data: {
                 ...data,

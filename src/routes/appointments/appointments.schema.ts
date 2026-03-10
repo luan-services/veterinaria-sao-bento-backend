@@ -3,9 +3,6 @@ import { z } from "zod";
 export const createAppointmentSchema = z.object({
     date: z.coerce.date()
         .refine((date) => date > new Date(), { message: "Appointments cannot happen in the past" }),
-    duration: z.number() /* duration will sun to date and turn into 'endDate' */
-        .min(15)
-        .max(50), 
     serviceType: z.enum(["CONSULTATION", "VACCINATION", "EXAM", "CHECKUP", "BATH_GROOMING"]),
     notes: z.string()
         .max(500)
@@ -24,12 +21,9 @@ export const createAppointmentSchema = z.object({
 export const updateAppointmentSchema = z.object({
     date: z.coerce.date()
         .optional(),
-    duration: z.number() /* duration will sun to date and turn into 'endDate' */
-        .min(15)
-        .max(50),
     serviceType: z.enum(["CONSULTATION", "VACCINATION", "EXAM", "CHECKUP", "BATH_GROOMING"])
         .optional(),
-    status: z.enum(["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"])
+    status: z.enum(["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED", "NO_SHOW"])
         .optional(),
     notes: z.string()
         .max(500)

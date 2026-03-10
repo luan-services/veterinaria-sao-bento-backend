@@ -2,7 +2,7 @@ import {prisma} from "../../lib/prisma.js";
 import { z } from 'zod';
 import { createAppointmentSchema, updateAppointmentSchema, listAppointmentsQuerySchema } from "./appointments.schema.js";
 import { HTTPException } from "hono/http-exception";
-import { APPOINTMENT_PER_USER_LIMIT, CANCEL_APPOINTMENT_TIME_LIMIT, SCHEDULE_MAXIMUM_DATE } from "../../config/config.js" /* constant */
+import { APPOINTMENT_PER_USER_LIMIT, CANCEL_APPOINTMENT_TIME_LIMIT, SCHEDULE_MAXIMUM_DATE, SERVICE_DURATION } from "../../config/config.js" /* constant */
 
 type CreateAppointmentInput = z.infer<typeof createAppointmentSchema>;
 type UpdateAppointmentInput = z.infer<typeof updateAppointmentSchema>;
@@ -97,57 +97,10 @@ export const appointmentsService = {
             throw new HTTPException(404, { message: "Pet not found" });
         };
 
+        const duration = SERVICE_DURATION[data.serviceType];
+
         const start = new Date(data.date);
-        const end = new Date(start.getTime() + data.duration * 60 * 1000);
-
-        let finalProfessional = data.professionalId;
-
-        /* checks if there is already an CONFIRMED appointment on the date (only if user selected a professional */
-        if (finalProfessional && finalProfessional !== "") {
-            const professionalConflict = await prisma.appointment.findFirst({
-                where: {
-                    professionalId: finalProfessional,
-                    status: { not: "CANCELLED" },
-                    AND: [
-                        { date: { lt: end } },      // existing appointments starts before the new one ends
-                        { endDate: { gt: start } }  //  existing appointments ends after the new one starts
-                    ]
-                }
-            });
-
-            if (professionalConflict) {
-                throw new HTTPException(409, { message: "There is already an appointment for this professional in this schedule" });
-            }
-        } 
-        else { /* if not, check for any available professional and assign */
-            const busyProfessionals = await prisma.appointment.findMany({
-                where: {
-                    status: { not: "CANCELLED" },
-                    AND: [
-                        { date: { lt: end } },      // existing appointments starts before the new one ends
-                        { endDate: { gt: start } }  //  existing appointments ends after the new one starts
-                    ]
-                },
-                select: { professionalId: true } 
-            });
-
-            const busyIds = busyProfessionals
-                .map(app => app.professionalId)
-                .filter((id): id is string => id !== null);
-
-            const availableProfessional = await prisma.professional.findFirst({
-                where: {
-                    id: { notIn: busyIds }, // 
-                    specialty: data.serviceType === "BATH_GROOMING" ? "GROOMER" : "GENERAL_DOCTOR" /* guarantees the professional specialty matches the service type */
-                }
-            });
-
-            if (!availableProfessional) {
-                throw new HTTPException(409, { message: "There is no available professional in this schedule" });
-            }
-
-            finalProfessional = availableProfessional.id;
-        }
+        const end = new Date(start.getTime() + duration * 60 * 1000);
 
         /* limit user appointments to 5 to avoid spam */
         const pendingCount = await prisma.appointment.count({
@@ -180,7 +133,6 @@ export const appointmentsService = {
         return await prisma.appointment.create({
             data: {
                 ...data,
-                professionalId: finalProfessional,
                 endDate: end,
                 userId: userId,
                 status: "PENDING"
@@ -285,15 +237,15 @@ export const appointmentsService = {
 
         /* admins can update the appointment table by any means, passing through any date time or appointment quantity per 
         user constraint */
+        const start = data.date ? new Date(data.date) : existingAppointment.date;
+        let end = existingAppointment.endDate;
 
-        let start = data.date ? new Date(data.date) : existingAppointment.date;
-        let end = undefined;
-
-        /* if there is duration, calculates it based on start (new or old) */
-        if(data.duration) {
-            end = new Date(start.getTime() + data.duration * 60 * 1000);
-        } 
-        else if (data.date) { /* if not, but if have a new start, calculates it based on new start */
+        if (data.serviceType) {
+            const duration = SERVICE_DURATION[data.serviceType];
+            end = new Date(start.getTime() + duration * 60 * 1000);
+        }
+        // se mudou só a data → mantém duração original
+        else if (data.date && existingAppointment.endDate) {
             const originalDuration = existingAppointment.endDate.getTime() - existingAppointment.date.getTime();
             end = new Date(start.getTime() + originalDuration);
         }

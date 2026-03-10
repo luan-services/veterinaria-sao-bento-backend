@@ -4,7 +4,7 @@ export const createPetSchema = z.object({
     name: z.string()
         .min(1, "Pet name can't be blank")
         .max(60, "Pet name is expected to have less than 60 characters"),
-    species: z.enum(["DOG", "CAT"]),
+    species: z.enum(["DOG", "CAT", "RAT", "FISH", "BIRD", "CHICKEN", "OTHER"]),
     breed: z.string()
         .max(60, "Breed name is expected to have less than 60 characters")
         .optional(),
@@ -20,7 +20,7 @@ export const listPetsQuerySchema = z.object({
     name: z.string()
         .max(60, "Pet name is expected to have less than 60 characters")
         .optional(),
-    species: z.enum(["DOG", "CAT"])
+    species: z.enum(["DOG", "CAT", "RAT", "FISH", "BIRD", "CHICKEN", "OTHER"])
         .optional(),
     breed: z.string()
         .max(60, "Breed name is expected to have less than 60 characters")

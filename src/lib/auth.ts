@@ -80,6 +80,30 @@ export const auth = betterAuth({
         provider: "postgresql", 
     }),
     secret: process.env.BETTER_AUTH_SECRET,
+    /* must add this block for rate limiting in production if added clouflare route proxy protection 
+    advanced: {
+        ipAddress: {
+          ipAddressHeaders: process.env.NODE_ENV !== "production" ? ["x-forwarded-for"] : ["cf-connecting-ip"],
+      },
+    }, 
+    */
+    rateLimit: { /* this returns a error status === 429 and bypass errorHandler, must be catch on frontend 
+            if (response.status === 429) {
+                const retryAfter = response.headers.get("X-Retry-After");
+                console.log(`Rate limit exceeded. Retry after ${retryAfter} seconds`);
+            } */
+        enabled: true,
+        window: 60, 
+        max: 100, 
+        customRules: {
+            "/sign-in/email": { window: 10, max: 3 },
+            "/sign-up/email": { window: 300, max: 3 },
+            "/send-verification-email": { window: 300, max: 2 }, /* sends email, window should be big */
+            "/request-password-reset": { window: 300, max: 2 },  /* sends email, window should be big */
+            "/update-user": { window: 60, max: 10 },
+            "/magic-link/email": { window: 300, max: 3 }
+        }
+    },
     emailAndPassword: {
         enabled: true,
         requireEmailVerification: true, /* make verifying required before login */
@@ -135,7 +159,7 @@ export const auth = betterAuth({
     },
     hooks: {
         before: createAuthMiddleware(async (ctx) => {
-            process.env.NODE_ENV === "production" ? console.log(ctx.path) : "";
+            process.env.NODE_ENV !== "production" ? console.log(ctx.path) : "";
             if (ctx.path === "/sign-up/email") { /* this guarantees this middleware only runs on register by e-mail route */
                 const body = ctx.body; 
                 const validation = userRegisterSchema.safeParse(body); 

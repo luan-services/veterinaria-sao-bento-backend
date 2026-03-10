@@ -5,6 +5,8 @@ import { HTTPException } from 'hono/http-exception';
 import { petsService } from "./pets.service.js"; /* listByFilter, listByUser, getById, create, update, delete */
 import { createPetSchema, listPetsQuerySchema, updatePetSchema } from './pets.schema.js';
 
+import { strictRateLimiter } from '../../middleware/rateLimiter.js';
+
 const app = new Hono<AuthEnv>()
 
 /* auth middleware to guarantee only authenticated users has access to these routes */
@@ -75,7 +77,7 @@ app.get('/', async (ctx) => {
 /* @desc create a new pet
    @route POST https://example.com/api/pets
    @access private (USER, ADMIN) */
-app.post('/', async (ctx) => {
+app.post('/', strictRateLimiter, async (ctx) => {
 	const user = ctx.get("user");
 
 	if (!user) {
@@ -96,7 +98,7 @@ app.post('/', async (ctx) => {
 /* @desc update an user's pet fields 
    @route PATCH https://example.com/api/pets/:id
    @access private (USER, ADMIN) */
-app.patch('/:id', async (ctx) => {
+app.patch('/:id', strictRateLimiter, async (ctx) => {
 	const user = ctx.get("user");
 
 	if (!user) {
@@ -120,7 +122,7 @@ app.patch('/:id', async (ctx) => {
 /* @desc list any pets with filtering
    @route GET https://example.com/api/pets/userId=1234&name=Rex&species=DOG&breed=pitbull
    @access private (ADMIN) */
-app.delete('/:id', async (ctx) => {
+app.delete('/:id', strictRateLimiter, async (ctx) => {
 	const user = ctx.get("user");
 
 	if (!user) {

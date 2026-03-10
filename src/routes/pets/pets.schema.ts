@@ -8,7 +8,7 @@ export const createPetSchema = z.object({
     breed: z.string()
         .max(60, "Breed name is expected to have less than 60 characters")
         .optional(),
-    birthDate: z.date().optional(),
+    birthDate: z.coerce.date().optional(),
     photoUrl: z.url()
         .max(200, "URL is expected to have less than 60 characters")
         .optional(),

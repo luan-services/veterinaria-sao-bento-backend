@@ -165,11 +165,16 @@ export const appointmentsService = {
                     message: `Appointments can only be cancelled at least ${CANCEL_APPOINTMENT_TIME_LIMIT} hours in advance` 
                 });
             }
+            
+            /* commom users cannot cancel a already confirmed appointment */
+            if (existingAppointment.status === "CONFIRMED") {
+                throw new HTTPException(400, { message: "This appointment is already confirmed. Contact the clinic to cancel it" });
+            }
         }
 
         /* verify if it is not already cancelled */
         if (existingAppointment.status === "COMPLETED" || existingAppointment.status === "CANCELLED") {
-             throw new HTTPException(400, { message: "This appointment cannot be cancelled anymore" });
+            throw new HTTPException(400, { message: "This appointment cannot be cancelled anymore" });
         }
 
         return await prisma.appointment.update({ 

@@ -19,9 +19,9 @@ app.get('/', async (ctx) => {
         throw new HTTPException(401, { message: "Unauthorized" });
     }
 
-    const professional = await professionalsService.listAll();
+    const professionals = await professionalsService.listAll();
     
-    return ctx.json({ professional });
+    return ctx.json({ professionals });
 });
 
 /* @desc create a new professional

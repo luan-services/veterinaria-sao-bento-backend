@@ -32,12 +32,15 @@ app.get('/me', async (ctx) => {
     }
 
 	const query = validation.data;
+	const role = user.role ?? "USER"; 
 
     const pets = await petsService.listByUser(
         user.id, 
+		role,
 		{
 			name: query.name,
 			species: query.species,
+			gender: query.gender,
 			breed: query.breed,
 		}
     );
@@ -67,6 +70,7 @@ app.get('/', async (ctx) => {
     const pets = await petsService.listByFilter({
         userId: query.userId,
 		name: query.name,
+		gender: query.gender,
 		species: query.species,
 		breed: query.breed,
     });
@@ -113,8 +117,9 @@ app.patch('/:id', strictRateLimiter(), async (ctx) => {
     }
 
 	const petId = ctx.req.param('id');
+	const role = user.role ?? "USER"; 
 
-	const updatedPet = await petsService.update(petId, user.id, validation.data);
+	const updatedPet = await petsService.update(petId, user.id, role, validation.data);
 	return ctx.json(updatedPet, 200);
 })
 

@@ -107,11 +107,17 @@ enum Species {
   OTHER
 }
 
+enum Gender {
+  FEMALE
+  MALE
+}
+
 model Pet {
   id          String        @id @default(cuid())
   name        String
   species     Species
   breed       String?       // Raça
+  gender      Gender
   birthDate   DateTime?     // Para calcular idade
   photoUrl    String?
   
@@ -119,6 +125,7 @@ model Pet {
   
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?
 
   /* relationships */
   owner       User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
@@ -189,7 +196,7 @@ model Appointment {
   user          User              @relation(fields: [userId], references: [id])
   
   petId         String
-  pet           Pet               @relation(fields: [petId], references: [id])
+  pet           Pet               @relation(fields: [petId], references: [id], onDelete: Cascade)
   
   professionalId String?
   professional   Professional?     @relation(fields: [professionalId], references: [id])

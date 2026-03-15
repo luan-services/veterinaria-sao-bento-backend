@@ -34,11 +34,12 @@ export const petsService = {
         });
     },
 
-    async listByUser(userId: string, filters?: ListPetsParamsInput) {
+    async listByUser(userId: string, userRole: string, filters?: ListPetsParamsInput) {
         return await prisma.pet.findMany({
             where: {
                 ownerId: userId,
                 species: filters?.species, 
+                deletedAt: userRole === "USER" ? null : undefined, /* get only pets that were not deleted */
 
                 /* parcial and case-insensitive search */
                 name: filters?.name ? {
@@ -60,7 +61,8 @@ export const petsService = {
         return await prisma.pet.findFirst({
             where: { 
                 id: petId, 
-                ownerId: userId 
+                ownerId: userId,
+                deletedAt: null,
             }
         });
     },
@@ -68,7 +70,8 @@ export const petsService = {
     async create(userId: string, data: CreatePetInput) {
         const petCount = await prisma.pet.count({
             where: {
-                ownerId: userId
+                ownerId: userId,
+                deletedAt: null
             }
         });
 
@@ -84,7 +87,7 @@ export const petsService = {
         });
     },
 
-    async update(petId: string, userId: string, data: UpdatePetInput) {
+    async update(petId: string, userId: string, userRole: string, data: UpdatePetInput) {
 
         const existingPet = await prisma.pet.findUnique({
             where: { 
@@ -98,6 +101,11 @@ export const petsService = {
         }
 
         if (existingPet.ownerId !== userId) {
+            throw new HTTPException(403, { message: "You are not allowed to update this pet" });
+        }
+
+        /* normal users cannot update deleted pets */
+        if (existingPet.deletedAt !== null && userRole !== "ADMIN") {
             throw new HTTPException(403, { message: "You are not allowed to update this pet" });
         }
 
@@ -124,14 +132,35 @@ export const petsService = {
             throw new HTTPException(404, { message: "Pet not found" });
         }
 
+        const activeAppointments = await prisma.appointment.count({
+            where: {
+            petId: petId,
+            status: {
+                in: ['PENDING', 'CONFIRMED']
+            }
+            }
+        });
+
+        if (activeAppointments > 0) {
+            throw new HTTPException(403, { message: "Cannot delete pet with upcoming appointments. Please cancel them first."});
+        }
+
         if (existingPet.ownerId !== userId && userRole !== "ADMIN") {
             throw new HTTPException(403, { message: "You are not allowed to delete this pet" });
         }
 
+        /* to check appointments data, it is better to keep, it is better to keep the pet data and just flag as deleted */
+        return await prisma.pet.update({
+            where: { id: petId },
+            data: { 
+                deletedAt: new Date()
+            }
+        });
+        /*
         return await prisma.pet.delete({
             where: { 
                 id: petId 
             }
-        });
+        }); */
     }
 };

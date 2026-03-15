@@ -8,6 +8,7 @@ export const createPetSchema = z.object({
     breed: z.string()
         .max(60, "Breed name is expected to have less than 60 characters")
         .optional(),
+    gender: z.enum(["MALE", "FEMALE"]),
     birthDate: z.coerce.date().optional(),
     photoUrl: z.url()
         .max(200, "URL is expected to have less than 60 characters")
@@ -25,6 +26,7 @@ export const listPetsQuerySchema = z.object({
     breed: z.string()
         .max(60, "Breed name is expected to have less than 60 characters")
         .optional(),
+    gender: z.enum(["MALE", "FEMALE"]),
     /* this is a filter allowed only for admins, users might send but it'll be overwritten */
     userId: z.string()
         .max(50, "User ID is expected to have less than 50 characters")

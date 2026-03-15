@@ -21,7 +21,7 @@ app.get('/', async (ctx) => {
 
     const locations = await locationsService.listAll();
     
-    return ctx.json({ locations });
+    return ctx.json(locations, 200);
 });
 
 /* @desc create a new location

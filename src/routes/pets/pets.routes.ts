@@ -42,7 +42,7 @@ app.get('/me', async (ctx) => {
 		}
     );
 	
-    return ctx.json({ pets });
+    return ctx.json(pets, 200 );
 });
 
 /* @desc list any pets with filtering
@@ -71,7 +71,7 @@ app.get('/', async (ctx) => {
 		breed: query.breed,
     });
 
-    return ctx.json({ pets });
+    return ctx.json(pets, 200);
 });
 
 /* @desc create a new pet

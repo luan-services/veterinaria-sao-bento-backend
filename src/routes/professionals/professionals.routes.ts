@@ -21,7 +21,7 @@ app.get('/', async (ctx) => {
 
     const professionals = await professionalsService.listAll();
     
-    return ctx.json({ professionals });
+    return ctx.json(professionals, 200);
 });
 
 /* @desc create a new professional

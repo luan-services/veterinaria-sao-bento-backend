@@ -28,7 +28,7 @@ app.get('/schedule', async (ctx) => {
     // Chama o serviço otimizado que usa .select() para não vazar dados sensíveis
     const schedule = await appointmentsService.getSchedule(validation.data);
     
-    return ctx.json({ schedule });
+    return ctx.json(schedule, 200);
 });
 
 /* @desc list current user's appointments history
@@ -50,7 +50,7 @@ app.get('/me', async (ctx) => {
 
     const appointments = await appointmentsService.listByUser(user.id, validation.data);
     
-    return ctx.json({ appointments });
+    return ctx.json(appointments, 200);
 });
 
 /* @desc list ALL appointments with full details for admins
@@ -79,7 +79,7 @@ app.get('/', async (ctx) => {
         validation.data
     );
 
-    return ctx.json({ appointments });
+    return ctx.json(appointments, 200);
 });
 
 /* @desc request a new appointment

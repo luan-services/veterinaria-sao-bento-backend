@@ -17,6 +17,7 @@ export const petsService = {
             where: {
                 ownerId: filters?.userId, 
                 species: filters?.species, 
+                gender: filters?.gender,
 
                 /* parcial and case-insensitive search */
                 name: filters?.name ? {
@@ -39,6 +40,7 @@ export const petsService = {
             where: {
                 ownerId: userId,
                 species: filters?.species, 
+                gender: filters?.gender,
                 deletedAt: userRole === "USER" ? null : undefined, /* get only pets that were not deleted */
 
                 /* parcial and case-insensitive search */

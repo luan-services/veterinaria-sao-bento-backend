@@ -8,7 +8,6 @@ import { globalRateLimiter } from './middleware/rateLimiter.js'
 
 /* routes */
 import petsRouter from "./routes/pets/pets.routes.js"
-import locationsRouter from "./routes/locations/locations.routes.js"
 import professionalsRouter from "./routes/professionals/professionals.routes.js"
 import appointmentsRouter from "./routes/appointments/appointments.routes.js"
 
@@ -56,7 +55,6 @@ app.use('*', secureHeaders());
 app.onError(errorMiddleware());
 
 app.route('/api/pets', petsRouter);
-app.route('/api/locations', locationsRouter);
 app.route('/api/professionals', professionalsRouter);
 app.route('/api/appointments', appointmentsRouter);
 

@@ -41,7 +41,7 @@ export const listAppointmentsQuerySchema = z.object({
         .optional(),
     endDate: z.coerce.date()
         .optional(),
-    status: z.enum(["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"])
+    status: z.enum(["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED", "NO_SHOW"])
         .optional(),
     serviceType: z.enum(["CONSULTATION", "VACCINATION", "EXAM", "CHECKUP", "BATH_GROOMING"])
         .optional(),

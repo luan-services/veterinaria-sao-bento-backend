@@ -4,7 +4,7 @@ export const createProfessionalSchema = z.object({
     name: z.string()
         .min(1, "Professional name can't be blank")
         .max(120, "Professional name is expected to have less than 120 characters"),
-    specialty: z.enum(["GENERAL_DOCTOR", "GROOMER"]),
+    specialty: z.enum(["GENERAL_DOCTOR", "BATH_GROOMING"]),
     active: z.boolean()
         .default(true),
 });

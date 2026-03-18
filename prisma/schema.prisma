@@ -137,7 +137,7 @@ model Pet {
 
 enum Specialty {
   GENERAL_DOCTOR
-  GROOMER
+  BATH_GROOMING
 }
 
 model Professional {
@@ -150,18 +150,6 @@ model Professional {
   appointments Appointment[]
 
   @@map("professional")
-}
-
-model Location {
-  id          String        @id @default(cuid())
-  name        String        // Ex: "Unidade Centro"
-  city        String
-  address     String
-  zipCode     String
-  /* relationships */
-  appointments Appointment[]
-
-  @@map("location")
 }
 
 enum AppointmentStatus {
@@ -200,9 +188,6 @@ model Appointment {
   
   professionalId String?
   professional   Professional?     @relation(fields: [professionalId], references: [id])
-  
-  locationId    String?
-  location      Location?          @relation(fields: [locationId], references: [id])
 
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt

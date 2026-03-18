@@ -11,10 +11,7 @@ export const createAppointmentSchema = z.object({
         .max(50, "Pet ID is expected to have less than 50 characters"),
     professionalId: z.string()
         .max(50, "Professional ID is expected to have less than 50 characters")
-        .optional(),
-    locationId: z.string()
-        .max(50, "Location ID is expected to have less than 50 characters")
-        .optional(),
+        .optional()
 });
 
 /* only for admin */
@@ -30,10 +27,7 @@ export const updateAppointmentSchema = z.object({
         .optional(),
     professionalId: z.string()
         .max(50, "Professional ID is expected to have less than 50 characters")
-        .optional(),
-    locationId: z.string()
-        .max(50, "Location ID is expected to have less than 50 characters")
-        .optional(),
+        .optional()
 });
 
 export const listAppointmentsQuerySchema = z.object({
@@ -47,8 +41,5 @@ export const listAppointmentsQuerySchema = z.object({
         .optional(),
     professionalId: z.string()
         .max(50, "Professional ID is expected to have less than 50 characters")
-        .optional(),
-    locationId: z.string()
-        .max(50, "Location ID is expected to have less than 50 characters")
-        .optional(),
+        .optional()
 });

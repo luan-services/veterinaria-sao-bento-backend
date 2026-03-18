@@ -33,7 +33,6 @@ export const appointmentsService = {
                 status: { not: "CANCELLED" }, 
                 serviceType: filters?.serviceType,
                 professionalId: filters?.professionalId,
-                locationId: filters?.locationId,
                 date: {
                     gte: queryStartDate,
                     lte: queryEndDate
@@ -45,8 +44,7 @@ export const appointmentsService = {
                 endDate: true,      
                 status: true,        
                 serviceType: true,   
-                professionalId: true, 
-                locationId: true      
+                professionalId: true,  
             },
             orderBy: { date: 'asc' }
         });
@@ -73,7 +71,6 @@ export const appointmentsService = {
                 status: filters?.status,
                 serviceType: filters?.serviceType,
                 professionalId: filters?.professionalId,
-                locationId: filters?.locationId,
                 ...dateClause
                 
             },
@@ -215,7 +212,6 @@ export const appointmentsService = {
                 status: filters?.status,
                 serviceType: filters?.serviceType,
                 professionalId: filters?.professionalId,
-                locationId: filters?.locationId,
                 ...dateClause
                 
             },

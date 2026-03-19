@@ -127,6 +127,31 @@ export const appointmentsService = {
             throw new HTTPException(409, { message: "This pet already has an appointment at this time." });
         }
 
+        /* constraint to check if professional specialty matches service type */
+        if (data.professionalId) {
+            const professional = await prisma.professional.findUnique({
+                where: { id: data.professionalId }
+            });
+
+            if (!professional) {
+                throw new HTTPException(404, { message: "Professional not found" });
+            }
+
+            const service = data.serviceType;
+
+            if ( professional.specialty === "BATH_GROOMING" && service !== "BATH_GROOMING" ) {
+                throw new HTTPException(400, {
+                    message: "This professional only performs bath and grooming services."
+                });
+            }
+
+            if ( professional.specialty === "GENERAL_DOCTOR" && service === "BATH_GROOMING" ) {
+                throw new HTTPException(400, {
+                    message: "This professional cannot perform bath and grooming services."
+                });
+            }
+        }
+
         return await prisma.appointment.create({
             data: {
                 ...data,

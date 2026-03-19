@@ -74,6 +74,13 @@ export const appointmentsService = {
                 ...dateClause
                 
             },
+            include: {
+                pet: {
+                    select: {
+                        name: true
+                    }
+                }
+            },
             orderBy: { date: 'asc' }
         });
     },
@@ -239,6 +246,13 @@ export const appointmentsService = {
                 professionalId: filters?.professionalId,
                 ...dateClause
                 
+            },
+            include: {
+                pet: {
+                    select: {
+                        name: true
+                    }
+                }
             },
             orderBy: { date: 'asc' }
         });
